@@ -8,7 +8,7 @@ namespace StateMachine.Core
         private readonly Relation<TState, TState, StateReaction> _onExitsTo = [];
         private readonly Dictionary<TState, Action> _onExits = [];
 
-        public bool TryGetOnExitAction(Transition<TState, TState> transition, [MaybeNullWhen(false)] out Action action)
+        public bool TryGetActionOnExit(Transition<TState, TState> transition, [MaybeNullWhen(false)] out Action action)
         {
             bool hasReactionOnExitTo = _onExitsTo.TryGetValue(transition, out var reactionOnExitTo);
             bool hasActionOnExit = _onExits.TryGetValue(transition.from, out var actionOnExit);
@@ -19,9 +19,9 @@ namespace StateMachine.Core
             else if (hasReactionOnExitTo && hasActionOnExit)
                 action = reactionOnExitTo.behaviour switch
                 {
-                    StateReactionBehaviour.OverrideDefault => reactionOnExitTo.action,
-                    StateReactionBehaviour.AfterDefault => actionOnExit + reactionOnExitTo.action,
-                    StateReactionBehaviour.BeforeDefault => reactionOnExitTo.action + actionOnExit,
+                    StateReactionBehaviours.OverrideDefault => reactionOnExitTo.action,
+                    StateReactionBehaviours.AfterDefault => actionOnExit + reactionOnExitTo.action,
+                    StateReactionBehaviours.BeforeDefault => reactionOnExitTo.action + actionOnExit,
                     _ => throw new NotImplementedException(),
                 };
             else

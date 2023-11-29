@@ -1,6 +1,6 @@
 ﻿namespace StateMachine.Core
 {
-    internal enum StateReactionBehaviour
+    internal enum StateReactionBehaviours
     {
         OverrideDefault,
         AfterDefault,

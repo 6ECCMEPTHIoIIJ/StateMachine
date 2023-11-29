@@ -8,7 +8,7 @@ namespace StateMachine.Core
         private readonly Relation<TState, TState, StateReaction> _onEntriesFrom = [];
         private readonly Dictionary<TState, Action> _onEntries = [];
 
-        public bool TryGetOnEntryAction(Transition<TState, TState> transition, [MaybeNullWhen(false)] out Action action)
+        public bool TryGetActionOnEntry(Transition<TState, TState> transition, [MaybeNullWhen(false)] out Action action)
         {
             bool hasReactionOnEntryFrom = _onEntriesFrom.TryGetValue(transition.Reversed, out var reactionOnEntryFrom);
             bool hasActionOnEntry = _onEntries.TryGetValue(transition.to, out var actionOnEntry);
@@ -19,9 +19,9 @@ namespace StateMachine.Core
             else if (hasReactionOnEntryFrom && hasActionOnEntry)
                 action = reactionOnEntryFrom.behaviour switch
                 {
-                    StateReactionBehaviour.OverrideDefault => reactionOnEntryFrom.action,
-                    StateReactionBehaviour.AfterDefault => actionOnEntry + reactionOnEntryFrom.action,
-                    StateReactionBehaviour.BeforeDefault => reactionOnEntryFrom.action + actionOnEntry,
+                    StateReactionBehaviours.OverrideDefault => reactionOnEntryFrom.action,
+                    StateReactionBehaviours.AfterDefault => actionOnEntry + reactionOnEntryFrom.action,
+                    StateReactionBehaviours.BeforeDefault => reactionOnEntryFrom.action + actionOnEntry,
                     _ => throw new NotImplementedException(),
                 };
             else

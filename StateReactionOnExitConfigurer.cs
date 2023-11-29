@@ -17,23 +17,23 @@ namespace StateMachine
 
         public StateConfigurer<TState, TTrigger> OverrideDefault()
         {
-            AddReactionOnExitTo(StateReactionBehaviour.OverrideDefault);
+            AddReactionOnExitTo(StateReactionBehaviours.OverrideDefault);
             return _configurer.Configurer;
         }
 
         public StateConfigurer<TState, TTrigger> BeforeDefault()
         {
-            AddReactionOnExitTo(StateReactionBehaviour.BeforeDefault);
+            AddReactionOnExitTo(StateReactionBehaviours.BeforeDefault);
             return _configurer.Configurer;
         }
 
         public StateConfigurer<TState, TTrigger> AfterDefault()
         {
-            AddReactionOnExitTo(StateReactionBehaviour.AfterDefault);
+            AddReactionOnExitTo(StateReactionBehaviours.AfterDefault);
             return _configurer.Configurer;
         }
 
-        private void AddReactionOnExitTo(StateReactionBehaviour reactionBehaviour)
+        private void AddReactionOnExitTo(StateReactionBehaviours reactionBehaviour)
             => _configurer.Configurer.Machine.OnExitTable.AddReactionOnExitTo(
                 new Transition<TState, TState>(_configurer.Configurer.State, _to),
                 new StateReaction(_configurer.Action, reactionBehaviour));

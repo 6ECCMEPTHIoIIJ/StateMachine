@@ -13,6 +13,7 @@ namespace StateMachine
         internal TransitionTable<TState, TTrigger> TransitionTable { get; } = new();
         internal OnEntryTable<TState> OnEntryTable { get; } = new();
         internal OnExitTable<TState> OnExitTable { get; } = new();
+        internal OnProcessTable<TState> OnProcessTable { get; } = new();
         internal SubstateTable<TState> SubstateTable { get; } = new();
 
         [Pure]
@@ -35,7 +36,7 @@ namespace StateMachine
 
             void ExitFromState(Transition<TState, TState> transition)
             {
-                if (OnExitTable.TryGetOnExitAction(transition, out var action))
+                if (OnExitTable.TryGetActionOnExit(transition, out var action))
                     action.Invoke();
                 if (SubstateTable.TryGetSuperstate(transition.from, out var superstate))
                     ExitFromState(new Transition<TState, TState>(superstate, transition.to));
@@ -45,7 +46,7 @@ namespace StateMachine
             {
                 if (SubstateTable.TryGetSuperstate(transition.to, out var superstate))
                     EnterToState(new Transition<TState, TState>(transition.from, superstate));
-                if (OnEntryTable.TryGetOnEntryAction(transition, out var action))
+                if (OnEntryTable.TryGetActionOnEntry(transition, out var action))
                     action.Invoke();
             }
         }
