@@ -5,9 +5,10 @@ using System.Diagnostics.Contracts;
 namespace StateMachine
 {
     public class StateMachine<TState, TTrigger>
-        where TState : notnull
-        where TTrigger : notnull
+        where TState : struct
+        where TTrigger : struct
     {
+        private readonly StateConfigurer<TState, TTrigger> _configurer;
         private TState _current;
 
         internal TransitionTable<TState, TTrigger> TransitionTable { get; } = new();
@@ -15,19 +16,18 @@ namespace StateMachine
         internal OnExitTable<TState> OnExitTable { get; } = new();
         internal OnProcessTable<TState> OnProcessTable { get; } = new();
         internal SubstateTable<TState> SubstateTable { get; } = new();
-        internal StateConfigurer<TState, TTrigger> Configurer { get; }
 
-        public StateMachine(TState initialState)
+        public StateMachine(TState current)
         {
-            _current = initialState;
-            Configurer = new StateConfigurer<TState, TTrigger>(this);
+            _current = current;
+            _configurer = new(this);
         }
 
         [Pure]
         public StateConfigurer<TState, TTrigger> Configure(TState state)
         {
-            Configurer.State = state;
-            return Configurer;
+            _configurer.State = state;
+            return _configurer;
         }
 
         [Pure]
@@ -35,31 +35,38 @@ namespace StateMachine
 
         public void Fire(TTrigger trigger)
         {
-            if (TransitionTable.TryGetTransition(new Transition<TState, TTrigger>(_current, trigger), out var to))
-                SwitchState(new Transition<TState, TState>(_current, to));
-
-            void SwitchState(Transition<TState, TState> transition)
+            if (TransitionTable.TryGetTransition(_current, trigger, out var to))
             {
-                ExitFromState(transition);
-                EnterToState(transition);
-                _current = transition.to;
+                ExitFromState(_current, to);
+                EnterToState(_current, to);
+                _current = to;
             }
+        }
 
-            void ExitFromState(Transition<TState, TState> transition)
-            {
-                if (OnExitTable.TryGetActionOnExit(transition, out var action))
-                    action.Invoke();
-                if (SubstateTable.TryGetSuperstate(transition.from, out var superstate))
-                    ExitFromState(new Transition<TState, TState>(superstate, transition.to));
-            }
+        public void Process()
+        {
+            if (OnProcessTable.TryGetActionOnProcess(_current, out var action))
+                action.Invoke();
+        }
 
-            void EnterToState(Transition<TState, TState> transition)
-            {
-                if (SubstateTable.TryGetSuperstate(transition.to, out var superstate))
-                    EnterToState(new Transition<TState, TState>(transition.from, superstate));
-                if (OnEntryTable.TryGetActionOnEntry(transition, out var action))
-                    action.Invoke();
-            }
+        [Pure]
+        internal StateConfigurer<TState, TTrigger> ContinueConfiguration() 
+            => _configurer;
+
+        private void ExitFromState(TState from, TState to)
+        {
+            if (OnExitTable.TryGetAction(from, to, out var action))
+                action.Invoke();
+            if (SubstateTable.TryGetSuperstate(from, out var superstate))
+                ExitFromState(superstate, to);
+        }
+
+        private void EnterToState(TState from, TState to)
+        {
+            if (SubstateTable.TryGetSuperstate(to, out var superstate))
+                EnterToState(from, superstate);
+            if (OnEntryTable.TryGetAction(to, from, out var action))
+                action.Invoke();
         }
     }
 }

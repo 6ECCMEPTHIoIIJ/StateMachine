@@ -1,16 +1,16 @@
-﻿using StateMachine.Core;
+﻿using System;
 
 namespace StateMachine
 {
     public class StateTransitionConfigurer<TState, TTrigger>
-        where TState : notnull
-        where TTrigger : notnull
+        where TState : struct
+        where TTrigger : struct
     {
         private readonly StateMachine<TState, TTrigger> _machine;
 
-        internal TState? From { private get; set; }
-        internal TState? To { private get; set; }
-        internal TTrigger? Trigger { private get; set; }
+        internal TState From { private get; set; }
+        internal TState To { private get; set; }
+        internal TTrigger Trigger { private get; set; }
 
         internal StateTransitionConfigurer(StateMachine<TState, TTrigger> machine)
         {
@@ -19,17 +19,15 @@ namespace StateMachine
 
         public StateConfigurer<TState, TTrigger> Unconditional()
         {
-            var transition = new Transition<TState, TTrigger>(From!, Trigger!);
-            _machine.TransitionTable.AddTransition(transition, To!);
-            return _machine.Configurer;
+            _machine.TransitionTable.AddTransition(From, Trigger, To);
+            return _machine.ContinueConfiguration();
         }
 
         public StateConfigurer<TState, TTrigger> If(Func<bool> condition)
         {
-            var transition = new Transition<TState, TTrigger>(From!, Trigger!);
-            _machine.TransitionTable.AddTransition(transition, To!);
-            _machine.TransitionTable.AddCondition(transition, condition);
-            return _machine.Configurer;
+            _machine.TransitionTable.AddTransition(From, Trigger, To);
+            _machine.TransitionTable.AddCondition(From, Trigger, condition);
+            return _machine.ContinueConfiguration();
         }
     }
 }

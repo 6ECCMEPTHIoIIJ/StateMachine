@@ -1,13 +1,15 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace StateMachine.Core
 {
     internal class OnProcessTable<TState>
-        where TState : notnull
+        where TState : struct
     {
         private readonly Dictionary<TState, Action> _onProcesses = [];
 
-        public bool TryGetActionOnProcess(TState state, [MaybeNullWhen(false)] out Action action) 
+        public bool TryGetActionOnProcess(TState state, [MaybeNullWhen(false)] out Action action)
             => _onProcesses.TryGetValue(state, out action);
 
         public void AddActionOnProcess(TState state, Action action)

@@ -1,8 +1,10 @@
-﻿namespace StateMachine.Core
+﻿using System;
+
+namespace StateMachine.Core
 {
-    internal readonly struct StateReaction(Action action, StateReactionBehaviours behaviour = StateReactionBehaviours.OverrideDefault)
+    internal readonly struct StateReaction
     {
-        public readonly Action action = action;
-        public readonly StateReactionBehaviours behaviour = behaviour;
+        public required Action Action { get; init; }
+        public required StateReactionBehaviours Behaviour { get; init; }
     }
 }
