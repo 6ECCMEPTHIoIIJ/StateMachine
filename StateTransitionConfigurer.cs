@@ -6,30 +6,30 @@ namespace StateMachine
         where TState : notnull
         where TTrigger : notnull
     {
-        private readonly StateConfigurer<TState, TTrigger> _configurer;
-        private readonly TState _to;
-        private readonly TTrigger _trigger;
+        private readonly StateMachine<TState, TTrigger> _machine;
 
-        internal StateTransitionConfigurer(StateConfigurer<TState, TTrigger> configurer, TState to, TTrigger trigger)
+        internal TState? From { private get; set; }
+        internal TState? To { private get; set; }
+        internal TTrigger? Trigger { private get; set; }
+
+        internal StateTransitionConfigurer(StateMachine<TState, TTrigger> machine)
         {
-            _configurer = configurer;
-            _to = to;
-            _trigger = trigger;
+            _machine = machine;
         }
 
         public StateConfigurer<TState, TTrigger> Unconditional()
         {
-            var transition = new Transition<TState, TTrigger>(_configurer.State, _trigger);
-            _configurer.Machine.TransitionTable.AddTransition(transition, _to);
-            return _configurer;
+            var transition = new Transition<TState, TTrigger>(From!, Trigger!);
+            _machine.TransitionTable.AddTransition(transition, To!);
+            return _machine.Configurer;
         }
 
         public StateConfigurer<TState, TTrigger> If(Func<bool> condition)
         {
-            var transition = new Transition<TState, TTrigger>(_configurer.State, _trigger);
-            _configurer.Machine.TransitionTable.AddTransition(transition, _to);
-            _configurer.Machine.TransitionTable.AddCondition(transition, condition);
-            return _configurer;
+            var transition = new Transition<TState, TTrigger>(From!, Trigger!);
+            _machine.TransitionTable.AddTransition(transition, To!);
+            _machine.TransitionTable.AddCondition(transition, condition);
+            return _machine.Configurer;
         }
     }
 }

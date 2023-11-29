@@ -4,20 +4,31 @@ using System.Diagnostics.Contracts;
 
 namespace StateMachine
 {
-    public class StateMachine<TState, TTrigger>(TState initialState)
+    public class StateMachine<TState, TTrigger>
         where TState : notnull
         where TTrigger : notnull
     {
-        private TState _current = initialState;
+        private TState _current;
 
         internal TransitionTable<TState, TTrigger> TransitionTable { get; } = new();
         internal OnEntryTable<TState> OnEntryTable { get; } = new();
         internal OnExitTable<TState> OnExitTable { get; } = new();
         internal OnProcessTable<TState> OnProcessTable { get; } = new();
         internal SubstateTable<TState> SubstateTable { get; } = new();
+        internal StateConfigurer<TState, TTrigger> Configurer { get; }
+
+        public StateMachine(TState initialState)
+        {
+            _current = initialState;
+            Configurer = new StateConfigurer<TState, TTrigger>(this);
+        }
 
         [Pure]
-        public StateConfigurer<TState, TTrigger> Configure(TState state) => new(this, state);
+        public StateConfigurer<TState, TTrigger> Configure(TState state)
+        {
+            Configurer.State = state;
+            return Configurer;
+        }
 
         [Pure]
         public bool IsInState(TState state) => _current.Equals(state);
