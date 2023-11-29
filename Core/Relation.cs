@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Contracts;
 
 namespace StateMachine.Core
 {
@@ -43,6 +44,7 @@ namespace StateMachine.Core
             return transitions.TryAdd(transition.to, value);
         }
 
+        [Pure]
         public bool ContainsKey(Transition<TFrom, TTo> transition)
             => TryGetValue(transition.from, out var transitions)
             && transitions.ContainsKey(transition.to);

@@ -18,6 +18,9 @@ namespace StateMachine
         [Pure]
         public StateConfigurer<TState, TTrigger> Configure(TState state) => new(this, state);
 
+        [Pure]
+        public bool IsInState(TState state) => _current.Equals(state);
+
         public void Fire(TTrigger trigger)
         {
             if (TransitionTable.TryGetTransition(new Transition<TState, TTrigger>(_current, trigger), out var to))
