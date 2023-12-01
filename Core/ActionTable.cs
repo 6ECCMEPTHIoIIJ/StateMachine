@@ -10,20 +10,16 @@ namespace StateMachine.Core
         private readonly Dictionary<TState, Action> _actions = [];
         private readonly Relation<TState, TState, StateReaction> _reactions = [];
 
+        public void AddState(TState state)
+        {
+            _reactions[state] = [];
+        }
+
         public void AddAction(TState state, Action action)
             => _actions[state] = action;
 
         public void AddReaction(TState state, TState on, StateReaction reaction)
             => _reactions[state, on] = reaction;
-
-        public void RemoveAction(TState state)
-            => _actions.Remove(state);
-
-        public void RemoveReaction(TState state, TState on)
-            => _reactions.Remove(state, on);
-
-        public void RemoveReactions(TState state)
-            => _reactions.Remove(state);
 
         public bool TryGetAction(TState state, TState on, [MaybeNullWhen(false)] out Action action)
         {
@@ -44,5 +40,8 @@ namespace StateMachine.Core
 
             return _actions.TryGetValue(state, out action);
         }
+
+        public bool TryGetAction(TState state, [MaybeNullWhen(false)] out Action action)
+            => _actions.TryGetValue(state, out action);
     }
 }

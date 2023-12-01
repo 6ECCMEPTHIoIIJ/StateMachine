@@ -15,7 +15,6 @@ namespace StateMachine
         internal OnEntryTable<TState> OnEntryTable { get; } = new();
         internal OnExitTable<TState> OnExitTable { get; } = new();
         internal OnProcessTable<TState> OnProcessTable { get; } = new();
-        internal SubstateTable<TState> SubstateTable { get; } = new();
 
         public StateMachine(TState current)
         {
@@ -26,6 +25,7 @@ namespace StateMachine
         [Pure]
         public StateConfigurer<TState, TTrigger> Configure(TState state)
         {
+            InitializeStateInternal(state);
             _configurer.State = state;
             return _configurer;
         }
@@ -37,15 +37,15 @@ namespace StateMachine
         {
             if (TransitionTable.TryGetTransition(_current, trigger, out var to))
             {
-                ExitFromState(_current, to);
-                EnterToState(_current, to);
+                ExitFromStateInternal(_current, to);
+                EnterToStateInternal(_current, to);
                 _current = to;
             }
         }
 
         public void Process()
         {
-            if (OnProcessTable.TryGetActionOnProcess(_current, out var action))
+            if (OnProcessTable.TryGetAction(_current, out var action))
                 action.Invoke();
         }
 
@@ -53,20 +53,24 @@ namespace StateMachine
         internal StateConfigurer<TState, TTrigger> ContinueConfiguration() 
             => _configurer;
 
-        private void ExitFromState(TState from, TState to)
+        private void ExitFromStateInternal(TState from, TState to)
         {
             if (OnExitTable.TryGetAction(from, to, out var action))
                 action.Invoke();
-            if (SubstateTable.TryGetSuperstate(from, out var superstate))
-                ExitFromState(superstate, to);
         }
 
-        private void EnterToState(TState from, TState to)
+        private void EnterToStateInternal(TState from, TState to)
         {
-            if (SubstateTable.TryGetSuperstate(to, out var superstate))
-                EnterToState(from, superstate);
             if (OnEntryTable.TryGetAction(to, from, out var action))
                 action.Invoke();
+        }
+
+        private void InitializeStateInternal(TState state)
+        {
+            TransitionTable.AddState(state);
+            OnExitTable.AddState(state);
+            OnEntryTable.AddState(state);
+            OnProcessTable.AddState(state);
         }
     }
 }

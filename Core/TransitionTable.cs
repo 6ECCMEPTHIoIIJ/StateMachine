@@ -15,16 +15,16 @@ namespace StateMachine.Core
             && (!_conditions.TryGetValue(from, trigger, out var condition)
             || condition.Invoke());
 
+        public void AddState(TState state)
+        {
+            _transitions[state] = [];
+            _conditions[state] = [];
+        }
+
         public void AddTransition(TState from, TTrigger trigger, TState to)
             => _transitions[from, trigger] = to;
 
         public void AddCondition(TState from, TTrigger trigger, Func<bool> when)
             => _conditions[from, trigger] = when;
-
-        public void RemoveTransition(TState from, TTrigger trigger)
-            => _transitions.Remove(from, trigger);
-
-        public void RemoveCondition(TState from, TTrigger trigger)
-            => _conditions.Remove(from, trigger);
     }
 }
